@@ -6,7 +6,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.openssl import backend
 from cryptography.hazmat.primitives.serialization import (
     load_der_private_key, load_pem_private_key, load_der_public_key,
     load_pem_public_key
@@ -31,11 +31,11 @@ def load_signing_key(signing_key):
 
         try:
             return load_der_private_key(
-                signing_key, password=None, backend=default_backend())
+                signing_key, password=None, backend=backend)
         except:
             try:
                 return load_pem_private_key(
-                    signing_key, password=None, backend=default_backend())
+                    signing_key, password=None, backend=backend)
             except Exception as e:
                 raise ValueError(
                     'Signing key must be a valid private key PEM or DER.')

@@ -12,7 +12,7 @@ import binascii
 import traceback
 from collections import Mapping
 
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.openssl import backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.serialization import (
     load_der_private_key, load_pem_private_key, load_der_public_key,
@@ -78,11 +78,11 @@ class Tokenizer():
         elif isinstance(verifying_key, (str, unicode)):
             try:
                 return load_der_public_key(
-                    verifying_key, backend=default_backend())
+                    verifying_key, backend=backend)
             except:
                 try:
                     return load_pem_public_key(
-                        verifying_key, backend=default_backend())
+                        verifying_key, backend=backend)
                 except Exception as e:
                     traceback.print_exc()
                     raise ValueError('Invalid verifying key format')

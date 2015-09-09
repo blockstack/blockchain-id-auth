@@ -13,7 +13,7 @@ import traceback
 import unittest
 from test import test_support
 from pybitcoin import BitcoinPrivateKey
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.openssl import backend
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateKey, EllipticCurvePublicKey
