@@ -19,7 +19,7 @@ from tests.test_data import PRIVATE_KEY, PUBLIC_KEY, \
     REQUEST_SAMPLE_ENCODED_TOKEN, REQUEST_SAMPLE_DECODED_TOKEN,\
     RESPONSE_SAMPLE_ENCODED_TOKEN, RESPONSE_SAMPLE_DECODED_TOKEN, RYAN_PROFILE
 from blockchainauth.tokenizer import Tokenizer
-from blockchainauth.verification import do_public_keys_match_username, NAME_LOOKUP_URL
+from blockchainauth.verification import do_public_keys_match_username, LOCALHOST_CORE_API, NAME_LOOKUP_URL
 
 
 class AuthRequestTest(unittest.TestCase):
@@ -96,7 +96,7 @@ class AuthResponseTest(unittest.TestCase):
 
         # with username
         with requests_mock.mock() as m:
-            m.get(NAME_LOOKUP_URL.rstrip('/') + '/' + self.username,
+            m.get(LOCALHOST_CORE_API + NAME_LOOKUP_URL + self.username,
                   text=json.dumps({'address': self.public_key.address()}))
             auth_response = AuthResponse(self.private_key_hex, RYAN_PROFILE, self.username)
             auth_response_token = auth_response.token()
