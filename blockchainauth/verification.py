@@ -7,12 +7,15 @@
 """
 
 import requests
+import requests.exceptions
 import time
 import traceback
 from pybitcoin import BitcoinPublicKey
 from blockchainauth.dids import get_address_from_did
 
-NAME_LOOKUP_URL = 'https://explorer-api.appartisan.com/get_name_blockchain_record/'
+LOCALHOST_CORE_API = 'http://localhost:6270'
+EXTERNAL_CORE_API = 'https://core.blockstack.org'
+NAME_LOOKUP_URL = '/v1/names/'
 
 
 def do_signatures_match_public_keys(token, tokenizer, decoded_token):
@@ -55,14 +58,32 @@ def do_public_keys_match_username(token, tokenizer, decoded_token):
         traceback.print_exc()
         return False
 
-    if not payload.get('username', None) or not NAME_LOOKUP_URL:
+    if not payload.get('username', None):
         return True
 
     username = payload['username']
-    url = NAME_LOOKUP_URL.rstrip('/') + '/' + username
 
     # get publicly available address and address from payload
-    response = requests.get(url).json()
+    # first try from localhost
+    url = LOCALHOST_CORE_API + NAME_LOOKUP_URL + username
+    try:
+        response = requests.get(url).json()
+    except (requests.exceptions.RequestException, ValueError):
+        # ValueError for non-json responses
+        response = None
+
+    # if failed try from public Core API
+    if not response:
+        url = EXTERNAL_CORE_API + NAME_LOOKUP_URL + username
+        try:
+            response = requests.get(url).json()
+        except (requests.exceptions.RequestException, ValueError):
+            # ValueError for non-json responses
+            response = None
+
+    if not response:
+        return False
+
     try:
         address_from_issuer = get_address_from_did(payload.get('iss', ''))
     except ValueError:

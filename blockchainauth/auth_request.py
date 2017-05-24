@@ -7,8 +7,11 @@
     :license: MIT, see LICENSE for more details.
 """
 
-import uuid
+from jwt import DecodeError
+import requests
+import requests.exceptions
 import time
+import uuid
 from cryptography.hazmat.backends import default_backend
 from pybitcoin import BitcoinPrivateKey
 from blockchainauth.auth_message import AuthMessage
@@ -31,7 +34,7 @@ class AuthRequest(AuthMessage):
     ]
 
     def __init__(self, private_key, domain_name, manifest_uri=None, redirect_uri=None,
-                 scopes=None, expires_after=None, crypto_backend=default_backend()):
+                 scopes=None, expires_after=None, crypto_backend=default_backend(), **kwargs):
         """ private_key should be provided in HEX, WIF or binary format 
             domain_name should be a valid domain
             manifest_uri should be a valid URI
@@ -78,6 +81,20 @@ class AuthRequest(AuthMessage):
             payload['public_keys'] = [public_key.to_hex()]
             payload['iss'] = make_did_from_address(address)
         return payload
+
+    @classmethod
+    def fetch_app_manifest(cls, token):
+        # decode the token
+        try:
+            decoded_token = cls.decode(token)
+        except DecodeError:
+            return None
+
+        try:
+            return requests.get(decoded_token['payload']['manifest_uri']).json()
+        except (requests.exceptions.RequestException, ValueError):
+            # ValueError for non-json responses
+            return None
 
     def redirect_url(self):
         return 'blockstack:' + self.token()
